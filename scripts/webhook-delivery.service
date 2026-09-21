@@ -1,0 +1,17 @@
+[Unit]
+Description=Webhook Delivery Service
+After=network.target
+
+[Service]
+Type=simple
+User=webhook
+WorkingDirectory=/opt/webhook-delivery-service
+EnvironmentFile=/etc/webhook-delivery-service.env
+ExecStart=/opt/webhook-delivery-service/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port ${PORT}
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
