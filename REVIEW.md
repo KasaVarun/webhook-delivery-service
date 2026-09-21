@@ -20,11 +20,12 @@ Delivery: load -> mark delivering/increment -> HTTP POST -> commit success/failu
 - Transaction: event plus current webhook fan-out is one `session.begin()` transaction; unique `event_id` maps to `409`.
 - Retry: `2xx` succeeds; non-`2xx` and `httpx.HTTPError` failures persist status/error. Defaults are four attempts and 1/2/4 second waits.
 - PostgreSQL/async: JSONB, async sessions, pool pre-ping, and `SELECT 1` readiness are implemented. `create_all` is local convenience, not migrations.
-- Droplet/systemd: artifacts target `/opt/webhook-delivery-service`, user `webhook`, an environment file, and restart-on-failure. None is target-verified.
+- Droplet/systemd: verified on `137.184.137.180`. The enabled `webhook-delivery.service` runs Uvicorn as non-root `webhook` from `/opt/webhook-delivery-service`, with secrets held in a `0600 root:root` environment file. The application role credential is URL-encoded in `DATABASE_URL`.
 - Failures: crashes abandon background work; a remote success plus local commit failure can duplicate; uncertain remote writes can duplicate; `delivering` rows are not reclaimed.
 - Concurrency/idempotency: unique `events.event_id` deduplicates intake only. There is no unique delivery pair, worker lease/lock, or receiver-facing idempotency key.
 - SSRF/security: HTTP(S) validation exists; private/reserved address controls, redirect/DNS checks, auth, authorization, rate limits, signing, secrets management, and TLS termination are not implemented.
-- Tests/CI: ten PostgreSQL integration tests passed locally. CI configuration exists but has no GitHub run evidence.
+- Tests/CI: ten PostgreSQL integration tests passed locally, and the GitHub Actions CI run `35660800623` passed.
+- Deployment verification: PostgreSQL is listening only on `127.0.0.1` and `::1`; UFW permits OpenSSH and `8000/tcp`, not `5432`. Public `/health` returned `200` with `database: ok`, and public `/docs` returned `200`. A public event created one successful HTTP `204` delivery and one deliberately unreachable destination exhausted all four attempts.
 - Observability: request latency and delivery outcomes are logged; `/metrics` returns persisted counts/average attempts. No Prometheus, tracing, dashboard, alert, or DLQ exists.
 - Scaling/migrations: durable queue/outbox, workers with `SKIP LOCKED` or leases, immutable attempts, PgBouncer, Redis coordination/rate limits, managed PostgreSQL, and Alembic are the production path.
 

@@ -13,9 +13,9 @@
 - [VERIFIED] Metrics including the mean persisted attempt count, returning `0.0` when empty.
 - [VERIFIED] OpenAPI, validation, structured request/delivery logging, and database error handling.
 - [VERIFIED] 10 PostgreSQL integration tests passed locally against `webhooks_test`: health/database failure; webhook validation/listing; event creation/duplicate; successful delivery; network failure; non-2xx failure; retry exhaustion; delivery/history lookup; metrics; and database uniqueness.
-- [IMPLEMENTED BUT NOT VERIFIED] Implementation-specific README and REVIEW guide.
-- [IMPLEMENTED BUT NOT VERIFIED] GitHub Actions CI configuration that installs dependencies and runs tests.
-- [NOT IMPLEMENTED] Droplet deployment, systemd setup, and public end-to-end verification.
+- [VERIFIED] Implementation-specific README and REVIEW guide.
+- [VERIFIED] GitHub Actions CI configuration passed in GitHub run `35660800623`.
+- [VERIFIED] DigitalOcean Droplet deployment: enabled, active systemd service; local PostgreSQL readiness; public health/docs; and public delivery workflow.
 - [VERIFIED] Local PostgreSQL verification completed with `TEST_DATABASE_URL=postgresql+asyncpg://varunkasa@localhost:5432/webhooks_test`; all 10 integration tests passed.
 
 ## Optional
@@ -32,21 +32,21 @@
 
 ## Out Of Scope
 
-- [NOT IMPLEMENTED] Creating a DigitalOcean account, Droplet, GitHub repository, or GitHub authentication session.
+- [VERIFIED] GitHub repository, GitHub Actions CI, and DigitalOcean Droplet were verified in this exercise.
 - [NOT IMPLEMENTED] Crash-safe distributed delivery processing. The production design is documented as durable queue workers with locking and idempotency.
 
 ## Final Requirement Evidence
 
 | Requirement | Implementation | File/function | Automated test | Manual test | Cloud verification | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| Readiness | PostgreSQL `SELECT 1` | `app/database.py:database_is_healthy` | health success/failure | `GET /health` 200 | Not performed | VERIFIED |
-| Webhooks | Validated persistent registration/listing | `app/routes/webhooks.py` | registration, invalid URL, list | POST/GET locally | Not performed | VERIFIED |
-| Events | Atomic event/delivery creation and DB duplicate handling | `app/repositories/event.py:create_with_deliveries` | creation, duplicate, unique constraint | POST and duplicate 409 | Not performed | VERIFIED |
-| Delivery | HTTP post and persisted terminal state | `app/services.py:DeliveryService.deliver` | success, network, non-2xx | controlled receiver returned 200 | Not performed | VERIFIED |
-| Retry | Four-attempt bounded backoff | `app/services.py:DeliveryService.deliver` | exact retry exhaustion | Not manually failed over HTTP | Not performed | VERIFIED |
-| Lookup/history | Delivery and event delivery reads with 404s | `app/routes/deliveries.py` | lookup/history tests | both reads returned 200 | Not performed | VERIFIED |
-| Metrics | Aggregate persisted state and attempt mean | `app/repositories/delivery.py:metrics` | metrics test | `GET /metrics` 200 | Not performed | VERIFIED |
-| OpenAPI/logging | Route metadata and request/delivery logs | `app/routes`, `app/main.py` | Route paths exercised | `/docs` 200, logs observed | Not performed | VERIFIED |
-| CI | PostgreSQL GitHub Actions workflow | `.github/workflows/ci.yml` | Not run by GitHub | Not applicable | Not performed | IMPLEMENTED BUT NOT VERIFIED |
-| Droplet/systemd | Unit and deployment instructions | `scripts/webhook-delivery.service`, `scripts/deploy.sh` | Not applicable | Not performed | Not performed | IMPLEMENTED BUT NOT VERIFIED |
-| Public workflow | External health, docs, delivery flow | Requires Droplet address | Not applicable | Local-only verification | Not performed | NOT IMPLEMENTED |
+| Readiness | PostgreSQL `SELECT 1` | `app/database.py:database_is_healthy` | health success/failure | `GET /health` 200 | Public 200 | VERIFIED |
+| Webhooks | Validated persistent registration/listing | `app/routes/webhooks.py` | registration, invalid URL, list | POST/GET locally | Public registration completed | VERIFIED |
+| Events | Atomic event/delivery creation and DB duplicate handling | `app/repositories/event.py:create_with_deliveries` | creation, duplicate, unique constraint | POST and duplicate 409 | Public event accepted | VERIFIED |
+| Delivery | HTTP post and persisted terminal state | `app/services.py:DeliveryService.deliver` | success, network, non-2xx | controlled receiver returned 200 | HTTP 204 delivery persisted | VERIFIED |
+| Retry | Four-attempt bounded backoff | `app/services.py:DeliveryService.deliver` | exact retry exhaustion | Not manually failed over HTTP | Unreachable target exhausted after 4 attempts | VERIFIED |
+| Lookup/history | Delivery and event delivery reads with 404s | `app/routes/deliveries.py` | lookup/history tests | both reads returned 200 | Public event history read | VERIFIED |
+| Metrics | Aggregate persisted state and attempt mean | `app/repositories/delivery.py:metrics` | metrics test | `GET /metrics` 200 | Not repeated publicly | VERIFIED |
+| OpenAPI/logging | Route metadata and request/delivery logs | `app/routes`, `app/main.py` | Route paths exercised | `/docs` 200, logs observed | Public docs 200; journal inspected | VERIFIED |
+| CI | PostgreSQL GitHub Actions workflow | `.github/workflows/ci.yml` | GitHub run `35660800623` | Not applicable | Passed | VERIFIED |
+| Droplet/systemd | Unit and deployment instructions | `scripts/webhook-delivery.service`, `scripts/deploy.sh` | Not applicable | Active/enabled service; loopback PostgreSQL; UFW checked | Public service verified | VERIFIED |
+| Public workflow | External health, docs, delivery flow | Droplet `:8000` | Not applicable | Public HTTP workflow completed | Health/docs/delivery verified | VERIFIED |
