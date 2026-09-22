@@ -113,9 +113,7 @@ No Droplet, systemd target run, outside URL, or public verification has been per
 
 ## Security
 
-HTTP(S)-only validation exists, but it does not stop SSRF to private, loopback, link-local, metadata, or redirected addresses. Production must resolve/block forbidden targets before connecting, re-check redirects, and apply egress controls. There is no API auth, authorization, tenant isolation, registration policy, or rate limiting. Use protected environment files or a secret manager, never source/logs, terminate TLS at a configured proxy/load balancer, and add per-destination credentials and signed outbound payloads. ## References
-
- [SAS](https://docs.google.com/document/d/1az78y3dfsUsq5Of3Dcs4d0qMholqy1clSfEcUeb9g7Y/edit?tab=t.y6vm3e4mgo6u)
+HTTP(S)-only validation exists, but it does not stop SSRF to private, loopback, link-local, metadata, or redirected addresses. Production must resolve/block forbidden targets before connecting, re-check redirects, and apply egress controls. There is no API auth, authorization, tenant isolation, registration policy, or rate limiting. Use protected environment files or a secret manager, never source/logs, terminate TLS at a configured proxy/load balancer, and add per-destination credentials and signed outbound payloads.[SAS](https://docs.google.com/document/d/1az78y3dfsUsq5Of3Dcs4d0qMholqy1clSfEcUeb9g7Y/edit?tab=t.y6vm3e4mgo6u)
  
 
 ## Limitations and Production Path
